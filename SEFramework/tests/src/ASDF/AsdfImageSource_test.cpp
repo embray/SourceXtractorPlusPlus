@@ -102,7 +102,7 @@ BOOST_FIXTURE_TEST_CASE(empty_ndarray_test, AsdfImageSourceFixture) {
 }
 
 
-// NOTE: WCS selection by path is covered in depth by GWCS_test; here we only
+// NOTE: WCS selection by name is covered in depth by GWCS_test; here we only
 // check that an ASDF image exposes a coordinate system at all -- or, when built
 // without libasdf-gwcs, that it reports having none instead of failing.
 BOOST_FIXTURE_TEST_CASE(get_coordinate_system, AsdfImageSourceFixture) {

@@ -31,7 +31,7 @@ using namespace SourceXtractor;
 
 /**
  * wcs_header.asdf holds two GWCS objects with deliberately different
- * projections, so that selecting between them by path is observable:
+ * projections, so that selecting between them by name is observable:
  * /wcs1 is RA---TAN and /wcs2 is RA---AIR.
  */
 struct GWCSFixture {
@@ -218,7 +218,7 @@ BOOST_FIXTURE_TEST_CASE(ConcurrentWorldToImage_test, GWCSFixture) {
 //-----------------------------------------------------------------------------
 
 /**
- * Selecting the WCS by path picks a different one, with a different projection
+ * Selecting the WCS by name picks a different one, with a different projection
  */
 BOOST_FIXTURE_TEST_CASE(SelectByPath_test, GWCSFixture) {
   AsdfImageSource asdf_source(m_asdf_path);

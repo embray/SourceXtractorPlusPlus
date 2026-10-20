@@ -66,9 +66,9 @@ public:
    */
   explicit AsdfImageSource(const std::string& filename, int image_index = 0,
                            ImageTile::ImageType image_type = ImageTile::AutoType,
-                           std::optional<std::string> wcs_path = std::nullopt,
+                           std::optional<std::string> wcs_name = std::nullopt,
                            std::shared_ptr<FileManager> manager = FileManager::getDefault()) :
-    AsdfImageSource(filename, image_index, std::nullopt, image_type, std::move(wcs_path),
+    AsdfImageSource(filename, image_index, std::nullopt, image_type, std::move(wcs_name),
                     std::move(manager)) {}
 
   /**
@@ -83,9 +83,9 @@ public:
    */
   explicit AsdfImageSource(const std::string& filename, const std::string& image_path,
                            ImageTile::ImageType image_type = ImageTile::AutoType,
-                           std::optional<std::string> wcs_path = std::nullopt,
+                           std::optional<std::string> wcs_name = std::nullopt,
                            std::shared_ptr<FileManager> manager = FileManager::getDefault()) :
-    AsdfImageSource(filename, 0, image_path, image_type, std::move(wcs_path),
+    AsdfImageSource(filename, 0, image_path, image_type, std::move(wcs_name),
                     std::move(manager)) {}
 
   std::shared_ptr<ImageTile> getImageTile(int x, int y, int width, int height) const override;
@@ -137,32 +137,34 @@ public:
   /**
    * The coordinate system of this image, or nullptr if it has none
    *
-   * Uses the WCS path given at construction, if any.  Only a FITS-compatible
+   * Uses the WCS name given at construction, if any.  Only a FITS-compatible
    * GWCS (a single fitswcs_imaging transform) can be represented for now;
    * anything else yields nullptr.
    */
   std::shared_ptr<CoordinateSystem> getCoordinateSystem() const override;
 
   /**
-   * As above, but overriding the WCS path given at construction
+   * As above, but overriding the WCS name given at construction
    *
-   * @param wcs_path
+   * @param wcs_name
    *    Either a bare tree path, or a colon-separated "ndarray:wcs" map; see
-   *    parseWcsPath.  When empty, the first usable WCS in the file is used.
+   *    parseWcsName.  When empty, the first usable WCS in the file is used.
    */
   std::shared_ptr<CoordinateSystem> getCoordinateSystem(
-      std::optional<std::string> wcs_path) const;
+      std::optional<std::string> wcs_name) const;
 
 private:
   AsdfImageSource(const std::string& filename, int image_index,
                   std::optional<std::string> image_path,
                   ImageTile::ImageType image_type,
-                  std::optional<std::string> wcs_path,
+                  std::optional<std::string> wcs_name,
                   std::shared_ptr<FileManager> manager);
 
+  /// Resolved tree locations: ndarray path -> GWCS path.  These really are paths,
+  /// unlike the wcs_name selector they are parsed out of.
   using WcsPathMap = std::unordered_map<std::string, std::string>;
 
-  WcsPathMap parseWcsPath(const std::string& wcs_path) const;
+  WcsPathMap parseWcsName(const std::string& wcs_name) const;
 
   std::string m_filename;
   ImageTile::ImageType m_image_type;
@@ -170,7 +172,7 @@ private:
   std::shared_ptr<FileHandler> m_handler;
 
   std::string m_image_path;
-  std::optional<std::string> m_wcs_path;
+  std::optional<std::string> m_wcs_name;
 
   std::shared_ptr<AsdfFile::Ndarray> m_ndarray;
   int m_current_layer = 0;

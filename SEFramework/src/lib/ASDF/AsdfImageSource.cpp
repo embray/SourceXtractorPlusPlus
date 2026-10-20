@@ -42,13 +42,13 @@ static auto logger = Elements::Logging::getLogger("ASDF");
 AsdfImageSource::AsdfImageSource(const std::string& filename, int image_index,
                                  std::optional<std::string> image_path,
                                  ImageTile::ImageType image_type,
-                                 std::optional<std::string> wcs_path,
+                                 std::optional<std::string> wcs_name,
                                  std::shared_ptr<FileManager> manager)
     : m_filename(filename)
     , m_image_type(image_type)
     , m_file_manager(std::move(manager))
     , m_handler(m_file_manager->getFileHandler(filename))
-    , m_wcs_path(std::move(wcs_path)) {
+    , m_wcs_name(std::move(wcs_name)) {
 
   auto acc = m_handler->getAccessor<AsdfFile>();
   auto& file = acc->m_fd;
@@ -131,25 +131,25 @@ inline std::string asdfNormalizePath(std::string s) {
 }
 
 
-AsdfImageSource::WcsPathMap AsdfImageSource::parseWcsPath(const std::string& wcs_path) const {
+AsdfImageSource::WcsPathMap AsdfImageSource::parseWcsName(const std::string& wcs_name) const {
   WcsPathMap path_map;
 
-  size_t nsep = std::count(wcs_path.begin(), wcs_path.end(), ':');
+  size_t nsep = std::count(wcs_name.begin(), wcs_name.end(), ':');
 
   // Simple case, a single WCS which we indicate with '*'
   if (nsep == 0) {
-    path_map["*"] = asdfNormalizePath(wcs_path);
+    path_map["*"] = asdfNormalizePath(wcs_name);
     return path_map;
   }
 
   std::vector<std::string> tokens;
-  boost::split(tokens, wcs_path, boost::is_any_of(":"));
+  boost::split(tokens, wcs_name, boost::is_any_of(":"));
   for (auto& token : tokens) {
     boost::trim(token);
   }
 
   if (tokens.size() % 2 != 0) {
-    throw Elements::Exception() << "Invalid WCS path given: " << wcs_path << "; odd number of "
+    throw Elements::Exception() << "Invalid WCS name given: " << wcs_name << "; odd number of "
       "path elements";
   }
 
@@ -164,7 +164,7 @@ AsdfImageSource::WcsPathMap AsdfImageSource::parseWcsPath(const std::string& wcs
 
 
 std::shared_ptr<CoordinateSystem> AsdfImageSource::getCoordinateSystem() const {
-  return getCoordinateSystem(m_wcs_path);
+  return getCoordinateSystem(m_wcs_name);
 }
 
 
@@ -176,18 +176,18 @@ std::shared_ptr<CoordinateSystem> AsdfImageSource::getCoordinateSystem(
 }
 #else
 std::shared_ptr<CoordinateSystem> AsdfImageSource::getCoordinateSystem(
-    std::optional<std::string> wcs_path) const {
+    std::optional<std::string> wcs_name) const {
   auto acc = m_handler->getAccessor<AsdfFile>();
   auto& file = acc->m_fd;
 
   AsdfFile::GwcsEvalPtr eval{nullptr, asdf_gwcs_eval_destroy};
 
-  if (wcs_path == std::nullopt) {
+  if (wcs_name == std::nullopt) {
     eval = file.getGwcsEval();
   } else {
-    // If a wcs_path is given we have to parse it and handle per-ndarray->GWCS
+    // If a wcs_name is given we have to parse it and handle per-ndarray->GWCS
     // mappings if present.
-    WcsPathMap path_map = parseWcsPath(*wcs_path);
+    WcsPathMap path_map = parseWcsName(*wcs_name);
     const std::string& ndarray_path = m_ndarray->getPath();
 
     if (path_map.find(ndarray_path) != path_map.end()) {

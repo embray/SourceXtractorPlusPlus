@@ -82,17 +82,17 @@ public:
    * configured default covering many files, so an explicit suffix on one filename
    * takes precedence and this is then ignored.
    */
-  void setImagePath(const std::string& image_path);
+  void setImageName(const std::string& image_name);
 
   /**
-   * Whether this file format can select a coordinate system by path
+   * Whether this file format can select a coordinate system by name
    *
    * True for formats that may hold several coordinate systems with no fixed
    * association to the image arrays, so that one has to be named explicitly.
    * That is the case for ASDF; it would also be the case for FITS carrying an
    * embedded GWCS, which is not supported yet.
    */
-  virtual bool supportsWcsPath() const { return false; }
+  virtual bool supportsWcsName() const { return false; }
 
   /**
    * Select which coordinate system the images from this reader should use
@@ -100,10 +100,10 @@ public:
    * Applies to every ImageSource subsequently returned by get() or iter().
    * Ignored, with a warning, by formats that do not support it.
    */
-  void setWcsPath(std::optional<std::string> wcs_path);
+  void setWcsName(std::optional<std::string> wcs_name);
 
-  const std::optional<std::string>& getWcsPath() const {
-    return m_wcs_path;
+  const std::optional<std::string>& getWcsName() const {
+    return m_wcs_name;
   }
 
   /* ImageFileReader iterator interface */
@@ -285,7 +285,7 @@ protected:
    *
    * get() and iter() then cover only the selection, rather than defaulting to
    * the first image or walking the whole file.  A selection names a single
-   * image today, by index or by path, so iterating one yields exactly one
+   * image today, by index or by name, so iterating one yields exactly one
    * image; it need not stay that narrow (e.g. one could imagine a wildcard
    * selection).
    */
@@ -296,7 +296,7 @@ protected:
   std::string m_filename;
   std::optional<std::string> m_image_path;
   int m_image_index;
-  std::optional<std::string> m_wcs_path;
+  std::optional<std::string> m_wcs_name;
 };
 
 }  // end of namespace SourceXtractor

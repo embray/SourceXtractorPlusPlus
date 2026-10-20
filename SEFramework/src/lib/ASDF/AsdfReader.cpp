@@ -60,27 +60,29 @@ std::shared_ptr<ImageSource> AsdfReader::get(int image_index, ImageTile::ImageTy
     const auto& paths = file.getImageNdarrayPaths();
 
     if (paths.size() > 1) {
+      // Listed with their indices, which are what a bare integer selects, so either
+      // the path or the shorter index can be copied straight out of this message
       std::ostringstream candidates;
-      for (const auto& path : paths) {
-        candidates << "\n    " << path;
+      for (size_t i = 0; i < paths.size(); i++) {
+        candidates << "\n    [" << i << "]  " << paths[i];
       }
 
       throw Elements::Exception()
         << "The ASDF file " << m_filename << " holds " << paths.size() << " arrays that "
         << "could be images, and nothing in the file says which one is meant.  Name it "
-        << "explicitly, as " << m_filename << "[<path>], choosing from:"
-        << candidates.str();
+        << "explicitly, either as " << m_filename << "[<name>] or with the corresponding "
+        << "--*-image-name option, choosing from:" << candidates.str();
     }
   }
 
   return std::make_shared<AsdfImageSource>(m_filename, image_index, image_type,
-                                           m_wcs_path);
+                                           m_wcs_name);
 }
 
 
 std::shared_ptr<ImageSource> AsdfReader::get(const std::string& extname,
                                              ImageTile::ImageType image_type) {
-  return std::make_shared<AsdfImageSource>(m_filename, extname, image_type, m_wcs_path);
+  return std::make_shared<AsdfImageSource>(m_filename, extname, image_type, m_wcs_name);
 }
 
 
